@@ -62,7 +62,7 @@ function showDetails(book) {
   year.innerHTML = `<strong>Рік видання</strong> ${book.year}`;
 
   const desc = document.createElement("p");
-  desc.innerHTML = `<strong>Опис</strong> ${book.desc}`;
+  desc.innerHTML = `<strong>Опис</strong> ${book.description}`;
 
   bookDescContainer.append(title, author, year, desc);
 }
