@@ -35,13 +35,18 @@ markup.style.display = "flex";
 markup.style.gap = "40px";
 root.append(markup);
 
-const bookListContainer = document.createElement("div");
 const border = "2px solid black";
 const padding = "20px";
+
+const bookListContainer = document.createElement("div");
+
 bookListContainer.style.border = border;
 bookListContainer.style.padding = padding;
 markup.append(bookListContainer);
 bookListContainer.append(title);
+
+const addBook = document.createElement("button");
+addBook.textContent = "Add Book";
 
 const bookDescContainer = document.createElement("div");
 markup.append(bookDescContainer);
@@ -67,6 +72,75 @@ function showDetails(book) {
   bookDescContainer.append(title, author, year, desc);
 }
 
+function addDescription(books) {
+  bookDescContainer.innerHTML = "";
+
+  bookDescContainer.style.border = border;
+  bookDescContainer.style.padding = padding;
+
+  const form = document.createElement("form");
+  form.style.display = "flex";
+  form.style.flexDirection = "column";
+
+  const margin = "30px";
+
+  const titleLabel = document.createElement("label");
+  titleLabel.textContent = "Enter title: ";
+  const inputTitle = document.createElement("input");
+  inputTitle.setAttribute("name", "title");
+  titleLabel.style.marginBottom = margin;
+  titleLabel.append(inputTitle);
+
+  const authorLabel = document.createElement("label");
+  authorLabel.textContent = "Enter author: ";
+  const inputAuthor = document.createElement("input");
+  inputAuthor.setAttribute("name", "author");
+  authorLabel.style.marginBottom = margin;
+  authorLabel.append(inputAuthor);
+
+  const yearLabel = document.createElement("label");
+  yearLabel.textContent = "Enter publishing year: ";
+  const inputYear = document.createElement("input");
+  inputYear.setAttribute("name", "year");
+  yearLabel.style.marginBottom = margin;
+  yearLabel.append(inputYear);
+
+  const descLabel = document.createElement("label");
+  descLabel.textContent = "Enter description: ";
+  const inputDesc = document.createElement("input");
+  inputDesc.setAttribute("name", "desc");
+  descLabel.style.marginBottom = margin;
+  descLabel.append(inputDesc);
+
+  const submit = document.createElement("button");
+  submit.textContent = "Submit";
+
+  form.append(titleLabel, authorLabel, yearLabel, descLabel, submit);
+  bookDescContainer.append(form);
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const data = new FormData(e.target);
+
+    const title = data.get("title");
+    const author = data.get("author");
+    const year = data.get("year");
+    const desc = data.get("desc");
+    const id = books.length + 1;
+
+    const book = {
+      id: id,
+      title: title,
+      author: author,
+      year: year,
+      description: desc,
+    };
+
+    books.push(book);
+  });
+}
+
 const bookList = document.createElement("ul");
 bookListContainer.append(bookList);
 
@@ -82,4 +156,7 @@ books.forEach(book => {
 
   listItem.append(bookTitle, button);
   bookList.appendChild(listItem);
+
+  bookListContainer.append(addBook);
+  addBook.addEventListener("click", () => addDescription(books));
 });
