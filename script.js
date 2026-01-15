@@ -100,7 +100,7 @@ function addDescription() {
     <label>Title <input name="title"></label>
     <label>Author <input name="author"></label>
     <label>Year <input name="year"></label>
-    <label>Description <input name="desc"></label>
+    <label>Description <textarea name="desc", rows="5", cols="40"></textarea></label>
     <button type="submit">Submit</button>
   `;
 
@@ -109,13 +109,27 @@ function addDescription() {
 
     const data = new FormData(e.target);
 
-    books.push({
-      id: books.length + 1,
+    const book = {
+      id: books.length > 0 ? books.length + 1 : 1,
       title: data.get("title"),
       author: data.get("author"),
       year: data.get("year"),
-      description: data.get("desc"),
-    });
+      desc: data.get("desc"),
+    };
+
+    if (Object.values(book).includes("")) {
+      console.warn("Поля не мають бути пустими!");
+    } else if (Number.isNaN(Number(book.year))) {
+      console.warn("Рік має бути числом");
+    } else {
+      books.push({
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        year: Number(book.year),
+        description: book.desc,
+      });
+    }
 
     showBookList();
     bookDescContainer.innerHTML = "";
