@@ -28,7 +28,7 @@ if (localStorage.getItem("books") === null) {
         description:
           "Книга про створення веб-застосунків з використанням HTML, CSS та JavaScript.",
       },
-    ])
+    ]),
   );
 } else {
   books = JSON.parse(localStorage.getItem("books"));
@@ -41,7 +41,7 @@ title.textContent = "Список книг";
 
 const markup = document.createElement("div");
 markup.style.display = "flex";
-markup.style.gap = "40px";
+markup.style.justifyContent = "space-between";
 root.append(markup);
 
 const border = "2px solid black";
@@ -63,6 +63,8 @@ bookListContainer.append(addBookBtn);
 const bookDescContainer = document.createElement("div");
 bookDescContainer.style.maxWidth = "50%";
 markup.append(bookDescContainer);
+
+const notification = document.createElement("div");
 
 function showBookList() {
   bookList.innerHTML = "";
@@ -110,6 +112,22 @@ function deleteBook(book) {
   books.splice(index, 1);
   editStorage();
   showBookList();
+  showNotification();
+}
+
+function showNotification() {
+  notification.innerHTML = "";
+  setTimeout(() => {
+    notification.innerHTML = "<strong>Книгу успішно видалено!</strong>";
+    notification.style.width = "25%";
+    notification.style.textAlign = "center";
+    notification.style.padding = padding;
+    notification.style.border = border;
+    markup.append(notification);
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  }, 1000);
 }
 
 function addDescription() {
@@ -136,7 +154,7 @@ function addDescription() {
     const data = new FormData(e.target);
 
     const book = {
-      id: books.length > 0 ? books.length + 1 : 1,
+      id: books.length > 0 ? books.at(-1).id + 1 : 1,
       title: data.get("title"),
       author: data.get("author"),
       year: data.get("year"),
