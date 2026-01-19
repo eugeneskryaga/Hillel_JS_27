@@ -1,29 +1,38 @@
-const books = [
-  {
-    id: 1,
-    title: "JavaScript для початківців",
-    author: "Іван Петренко",
-    year: 2021,
-    description:
-      "Книга знайомить з основами JavaScript та пояснює ключові поняття простою мовою.",
-  },
-  {
-    id: 2,
-    title: "Сучасний JavaScript",
-    author: "Олена Коваль",
-    year: 2020,
-    description:
-      "Посібник з сучасних можливостей JavaScript та прикладів їх використання.",
-  },
-  {
-    id: 3,
-    title: "Веб-розробка з нуля",
-    author: "Андрій Мельник",
-    year: 2019,
-    description:
-      "Книга про створення веб-застосунків з використанням HTML, CSS та JavaScript.",
-  },
-];
+let books;
+
+if (localStorage.getItem("books") === null) {
+  localStorage.setItem(
+    "books",
+    JSON.stringify([
+      {
+        id: 1,
+        title: "JavaScript для початківців",
+        author: "Іван Петренко",
+        year: 2021,
+        description:
+          "Книга знайомить з основами JavaScript та пояснює ключові поняття простою мовою.",
+      },
+      {
+        id: 2,
+        title: "Сучасний JavaScript",
+        author: "Олена Коваль",
+        year: 2020,
+        description:
+          "Посібник з сучасних можливостей JavaScript та прикладів їх використання.",
+      },
+      {
+        id: 3,
+        title: "Веб-розробка з нуля",
+        author: "Андрій Мельник",
+        year: 2019,
+        description:
+          "Книга про створення веб-застосунків з використанням HTML, CSS та JavaScript.",
+      },
+    ])
+  );
+} else {
+  books = JSON.parse(localStorage.getItem("books"));
+}
 
 const root = document.querySelector("#root");
 
@@ -64,11 +73,16 @@ function showBookList() {
 
     const bookTitle = book.title + " ";
 
-    const button = document.createElement("button");
-    button.textContent = "View Details";
-    button.addEventListener("click", () => showDetails(book));
+    const detailsButton = document.createElement("button");
+    detailsButton.textContent = "View Details";
+    detailsButton.style.marginRight = "5px";
+    detailsButton.addEventListener("click", () => showDetails(book));
 
-    listItem.append(bookTitle, button);
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete book";
+    deleteButton.addEventListener("click", () => deleteBook(book));
+
+    listItem.append(bookTitle, detailsButton, deleteButton);
     bookList.appendChild(listItem);
   });
 }
@@ -84,6 +98,18 @@ function showDetails(book) {
     <p><strong>Рік видання:</strong> ${book.year}</p>
     <p><strong>Опис:</strong> ${book.description}</p>
   `;
+}
+
+function editStorage() {
+  localStorage.clear();
+  localStorage.setItem("books", JSON.stringify(books));
+}
+
+function deleteBook(book) {
+  const index = books.indexOf(book);
+  books.splice(index, 1);
+  editStorage();
+  showBookList();
 }
 
 function addDescription() {
@@ -118,9 +144,9 @@ function addDescription() {
     };
 
     if (Object.values(book).includes("")) {
-      console.warn("Поля не мають бути пустими!");
+      alert("Поля не мають бути пустими!");
     } else if (Number.isNaN(Number(book.year))) {
-      console.warn("Рік має бути числом");
+      alert("Рік має бути числом");
     } else {
       books.push({
         id: book.id,
@@ -129,6 +155,7 @@ function addDescription() {
         year: Number(book.year),
         description: book.desc,
       });
+      editStorage();
     }
 
     showBookList();
