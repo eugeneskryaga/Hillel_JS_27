@@ -1,5 +1,3 @@
-let books;
-
 if (localStorage.getItem("books") === null) {
   localStorage.setItem(
     "books",
@@ -30,8 +28,6 @@ if (localStorage.getItem("books") === null) {
       },
     ]),
   );
-} else {
-  books = JSON.parse(localStorage.getItem("books"));
 }
 
 const root = document.querySelector("#root");
@@ -66,10 +62,14 @@ markup.append(bookDescContainer);
 
 const notification = document.createElement("div");
 
+function getBooks() {
+  return JSON.parse(localStorage.getItem("books")) || [];
+}
+
 function showBookList() {
   bookList.innerHTML = "";
 
-  books.forEach(book => {
+  getBooks().forEach(book => {
     const listItem = document.createElement("li");
     listItem.style.marginBottom = "10px";
 
@@ -102,16 +102,14 @@ function showDetails(book) {
   `;
 }
 
-function editStorage() {
-  localStorage.clear();
-  localStorage.setItem("books", JSON.stringify(books));
-}
-
 function deleteBook(book) {
-  const index = books.indexOf(book);
-  books.splice(index, 1);
-  editStorage();
+  const filteredBooks = getBooks().filter(
+    item => JSON.stringify(item) != JSON.stringify(book),
+  );
+  localStorage.setItem("books", JSON.stringify(filteredBooks));
   showBookList();
+  bookDescContainer.innerHTML = "";
+  bookDescContainer.style.border = "none";
   showNotification();
 }
 
@@ -154,31 +152,27 @@ function addDescription() {
     const data = new FormData(e.target);
 
     const book = {
-      id: books.length > 0 ? books.at(-1).id + 1 : 1,
+      id: getBooks().length > 0 ? getBooks().at(-1).id + 1 : 1,
       title: data.get("title"),
       author: data.get("author"),
       year: data.get("year"),
       desc: data.get("desc"),
     };
 
+    console.log(getBooks());
+
     if (Object.values(book).includes("")) {
       alert("Поля не мають бути пустими!");
     } else if (Number.isNaN(Number(book.year))) {
       alert("Рік має бути числом");
     } else {
-      books.push({
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        year: Number(book.year),
-        description: book.desc,
-      });
-      editStorage();
+      const newBooks = getBooks();
+      newBooks.push(book);
+      localStorage.setItem("books", JSON.stringify(newBooks));
+      showBookList();
+      bookDescContainer.innerHTML = "";
+      bookDescContainer.style.border = "none";
     }
-
-    showBookList();
-    bookDescContainer.innerHTML = "";
-    bookDescContainer.style.border = "none";
   });
 
   bookDescContainer.append(form);
