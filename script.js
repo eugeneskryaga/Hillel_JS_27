@@ -159,8 +159,6 @@ function addDescription() {
       desc: data.get("desc"),
     };
 
-    console.log(getBooks());
-
     if (Object.values(book).includes("")) {
       alert("Поля не мають бути пустими!");
     } else if (Number.isNaN(Number(book.year))) {
