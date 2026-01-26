@@ -1,34 +1,4 @@
-if (localStorage.getItem("books") === null) {
-  localStorage.setItem(
-    "books",
-    JSON.stringify([
-      {
-        id: 1,
-        title: "JavaScript для початківців",
-        author: "Іван Петренко",
-        year: 2021,
-        description:
-          "Книга знайомить з основами JavaScript та пояснює ключові поняття простою мовою.",
-      },
-      {
-        id: 2,
-        title: "Сучасний JavaScript",
-        author: "Олена Коваль",
-        year: 2020,
-        description:
-          "Посібник з сучасних можливостей JavaScript та прикладів їх використання.",
-      },
-      {
-        id: 3,
-        title: "Веб-розробка з нуля",
-        author: "Андрій Мельник",
-        year: 2019,
-        description:
-          "Книга про створення веб-застосунків з використанням HTML, CSS та JavaScript.",
-      },
-    ]),
-  );
-}
+const BASE_URL = "https://6971cf4a32c6bacb12c49096.mockapi.io/books";
 
 const root = document.querySelector("#root");
 
@@ -62,31 +32,33 @@ markup.append(bookDescContainer);
 
 const notification = document.createElement("div");
 
-function getBooks() {
-  return JSON.parse(localStorage.getItem("books")) || [];
-}
-
 function showBookList() {
   bookList.innerHTML = "";
 
-  getBooks().forEach(book => {
-    const listItem = document.createElement("li");
-    listItem.style.marginBottom = "10px";
+  fetch(BASE_URL)
+    .then(response => response.json())
+    .then(data => {
+      data.forEach(book => {
+        const listItem = document.createElement("li");
+        listItem.id = book.id;
+        listItem.style.marginBottom = "10px";
 
-    const bookTitle = book.title + " ";
+        const bookTitle = book.title + " ";
 
-    const detailsButton = document.createElement("button");
-    detailsButton.textContent = "View Details";
-    detailsButton.style.marginRight = "5px";
-    detailsButton.addEventListener("click", () => showDetails(book));
+        const detailsButton = document.createElement("button");
+        detailsButton.textContent = "View Details";
+        detailsButton.style.marginRight = "5px";
+        detailsButton.addEventListener("click", () => showDetails(book));
 
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete book";
-    deleteButton.addEventListener("click", () => deleteBook(book));
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete book";
+        deleteButton.addEventListener("click", event => deleteBook(event));
 
-    listItem.append(bookTitle, detailsButton, deleteButton);
-    bookList.appendChild(listItem);
-  });
+        listItem.append(bookTitle, detailsButton, deleteButton);
+        bookList.appendChild(listItem);
+      });
+    })
+    .catch(error => console.log(error));
 }
 
 function showDetails(book) {
@@ -102,17 +74,24 @@ function showDetails(book) {
   `;
 }
 
-function deleteBook(book) {
-  const filteredBooks = getBooks().filter(item => item.id !== book.id);
-  localStorage.setItem("books", JSON.stringify(filteredBooks));
-  showBookList();
-  bookDescContainer.innerHTML = "";
-  bookDescContainer.style.border = "none";
-  showNotification();
+function deleteBook(e) {
+  const id = e.target.parentNode.id;
+  console.log(id);
+  const options = {
+    method: "DELETE",
+  };
+  fetch(`${BASE_URL}/${id}`, options)
+    .then(() => {
+      showBookList();
+      showNotification();
+    })
+    .catch(error => console.log(error));
 }
 
 function showNotification() {
   notification.innerHTML = "";
+  bookDescContainer.innerHTML = "";
+  bookDescContainer.style.border = "none";
   setTimeout(() => {
     notification.innerHTML = "<strong>Книгу успішно видалено!</strong>";
     notification.style.width = "25%";
@@ -150,12 +129,11 @@ function addDescription() {
     const data = new FormData(e.target);
 
     const book = {
-      //
-      id: Date.now() + Math.random(),
       title: data.get("title"),
       author: data.get("author"),
       year: data.get("year"),
       description: data.get("desc"),
+      id: Date.now() + Math.random(),
     };
 
     if (Object.values(book).includes("")) {
@@ -163,12 +141,21 @@ function addDescription() {
     } else if (Number.isNaN(Number(book.year))) {
       alert("Рік має бути числом");
     } else {
-      const newBooks = getBooks();
-      newBooks.push(book);
-      localStorage.setItem("books", JSON.stringify(newBooks));
-      showBookList();
-      bookDescContainer.innerHTML = "";
-      bookDescContainer.style.border = "none";
+      const options = {
+        method: "POST",
+        body: JSON.stringify(book),
+        headers: {
+          "Content-Type": "application/json; charset = UTF-8",
+        },
+      };
+
+      fetch(BASE_URL, options)
+        .then(() => {
+          showBookList();
+          bookDescContainer.innerHTML = "";
+          bookDescContainer.style.border = "none";
+        })
+        .catch(error => console.log(error));
     }
   });
 
