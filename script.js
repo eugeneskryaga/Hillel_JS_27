@@ -103,9 +103,7 @@ function showDetails(book) {
 }
 
 function deleteBook(book) {
-  const filteredBooks = getBooks().filter(
-    item => JSON.stringify(item) != JSON.stringify(book),
-  );
+  const filteredBooks = getBooks().filter(item => item.id !== book.id);
   localStorage.setItem("books", JSON.stringify(filteredBooks));
   showBookList();
   bookDescContainer.innerHTML = "";
@@ -122,10 +120,10 @@ function showNotification() {
     notification.style.padding = padding;
     notification.style.border = border;
     markup.append(notification);
-    setTimeout(() => {
-      notification.remove();
-    }, 3000);
   }, 1000);
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
 }
 
 function addDescription() {
@@ -152,11 +150,12 @@ function addDescription() {
     const data = new FormData(e.target);
 
     const book = {
-      id: getBooks().length > 0 ? getBooks().at(-1).id + 1 : 1,
+      //
+      id: Date.now() + Math.random(),
       title: data.get("title"),
       author: data.get("author"),
       year: data.get("year"),
-      desc: data.get("desc"),
+      description: data.get("desc"),
     };
 
     if (Object.values(book).includes("")) {
