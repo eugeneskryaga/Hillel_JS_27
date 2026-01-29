@@ -3,7 +3,7 @@ const BASE_URL = "https://6971cf4a32c6bacb12c49096.mockapi.io/books";
 const root = document.querySelector("#root");
 
 const title = document.createElement("h1");
-title.textContent = "Список книг";
+title.innerHTML = "Список книг";
 
 const markup = document.createElement("div");
 markup.style.display = "flex";
@@ -35,6 +35,7 @@ const notification = document.createElement("div");
 function showBookList() {
   bookList.innerHTML = "";
 
+  title.textContent = "LOADING...";
   fetch(BASE_URL)
     .then(response => response.json())
     .then(data => {
@@ -48,7 +49,7 @@ function showBookList() {
         const detailsButton = document.createElement("button");
         detailsButton.textContent = "View Details";
         detailsButton.style.marginRight = "5px";
-        detailsButton.addEventListener("click", () => showDetails(book));
+        detailsButton.addEventListener("click", event => showDetails(event));
 
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete book";
@@ -58,25 +59,32 @@ function showBookList() {
         bookList.appendChild(listItem);
       });
     })
-    .catch(error => console.log(error));
+    .catch(error => console.log(error))
+    .finally((title.textContent = "Список книг"));
 }
 
-function showDetails(book) {
+function showDetails(e) {
   bookDescContainer.innerHTML = "";
   bookDescContainer.style.border = border;
   bookDescContainer.style.padding = padding;
 
-  bookDescContainer.innerHTML = `
-    <h2>${book.title}</h2>
-    <p><strong>Автор:</strong> ${book.author}</p>
-    <p><strong>Рік видання:</strong> ${book.year}</p>
-    <p><strong>Опис:</strong> ${book.description}</p>
-  `;
+  const id = e.target.parentNode.id;
+
+  fetch(`${BASE_URL}/${id}`)
+    .then(response => response.json())
+    .then(data => {
+      bookDescContainer.innerHTML = `
+        <h2>${data.title}</h2>
+        <p><strong>Автор:</strong> ${data.author}</p>
+        <p><strong>Рік видання:</strong> ${data.year}</p>
+        <p><strong>Опис:</strong> ${data.description}</p>
+      `;
+    })
+    .catch(error => console.log(error));
 }
 
 function deleteBook(e) {
   const id = e.target.parentNode.id;
-  console.log(id);
   const options = {
     method: "DELETE",
   };
@@ -85,6 +93,7 @@ function deleteBook(e) {
       showBookList();
       showNotification();
     })
+    .catch(error => console.log(error))
     .catch(error => console.log(error));
 }
 
@@ -133,7 +142,6 @@ function addDescription() {
       author: data.get("author"),
       year: data.get("year"),
       description: data.get("desc"),
-      id: Date.now() + Math.random(),
     };
 
     if (Object.values(book).includes("")) {
