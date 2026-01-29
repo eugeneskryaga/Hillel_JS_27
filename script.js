@@ -3,7 +3,6 @@ const BASE_URL = "https://6971cf4a32c6bacb12c49096.mockapi.io/books";
 const root = document.querySelector("#root");
 
 const title = document.createElement("h1");
-title.innerHTML = "Список книг";
 
 const markup = document.createElement("div");
 markup.style.display = "flex";
@@ -34,8 +33,8 @@ const notification = document.createElement("div");
 
 function showBookList() {
   bookList.innerHTML = "";
-
   title.textContent = "LOADING...";
+
   fetch(BASE_URL)
     .then(response => response.json())
     .then(data => {
@@ -49,7 +48,9 @@ function showBookList() {
         const detailsButton = document.createElement("button");
         detailsButton.textContent = "View Details";
         detailsButton.style.marginRight = "5px";
-        detailsButton.addEventListener("click", event => showDetails(event));
+        detailsButton.addEventListener("click", event => {
+          showDetails(event);
+        });
 
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete book";
@@ -60,7 +61,9 @@ function showBookList() {
       });
     })
     .catch(error => console.log(error))
-    .finally((title.textContent = "Список книг"));
+    .finally(() => {
+      title.textContent = "Список книг";
+    });
 }
 
 function showDetails(e) {
@@ -69,6 +72,8 @@ function showDetails(e) {
   bookDescContainer.style.padding = padding;
 
   const id = e.target.parentNode.id;
+  const button = e.target;
+  button.textContent = "Loading...";
 
   fetch(`${BASE_URL}/${id}`)
     .then(response => response.json())
@@ -80,7 +85,8 @@ function showDetails(e) {
         <p><strong>Опис:</strong> ${data.description}</p>
       `;
     })
-    .catch(error => console.log(error));
+    .catch(error => console.log(error))
+    .finally(() => (button.textContent = "View Details"));
 }
 
 function deleteBook(e) {
@@ -88,13 +94,14 @@ function deleteBook(e) {
   const options = {
     method: "DELETE",
   };
+  e.target.textContent = "Deleteing...";
   fetch(`${BASE_URL}/${id}`, options)
     .then(() => {
       showBookList();
       showNotification();
     })
     .catch(error => console.log(error))
-    .catch(error => console.log(error));
+    .finally(() => (e.target.textContent = "Delete book"));
 }
 
 function showNotification() {
@@ -144,9 +151,11 @@ function addDescription() {
       description: data.get("desc"),
     };
 
-    if (Object.values(book).includes("")) {
+    if (
+      Object.values(book).some(value => value === null || value.trim() === "")
+    ) {
       alert("Поля не мають бути пустими!");
-    } else if (Number.isNaN(Number(book.year))) {
+    } else if (!Number.isInteger(Number(book.year))) {
       alert("Рік має бути числом");
     } else {
       const options = {
@@ -157,13 +166,17 @@ function addDescription() {
         },
       };
 
+      const submitButton = form.querySelector("button");
+      submitButton.textContent = "Submiting...";
+
       fetch(BASE_URL, options)
         .then(() => {
           showBookList();
           bookDescContainer.innerHTML = "";
           bookDescContainer.style.border = "none";
         })
-        .catch(error => console.log(error));
+        .catch(error => console.log(error))
+        .finally(() => (submitButton.textContent = "Submit"));
     }
   });
 
