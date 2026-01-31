@@ -54,9 +54,14 @@ function showBookList() {
 
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete book";
+        deleteButton.style.marginRight = "5px";
         deleteButton.addEventListener("click", event => deleteBook(event));
 
-        listItem.append(bookTitle, detailsButton, deleteButton);
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit book";
+        editButton.addEventListener("click", event => editDescription(event));
+
+        listItem.append(bookTitle, detailsButton, deleteButton, editButton);
         bookList.appendChild(listItem);
       });
     })
@@ -121,11 +126,7 @@ function showNotification() {
   }, 3000);
 }
 
-function addDescription() {
-  bookDescContainer.innerHTML = "";
-  bookDescContainer.style.border = border;
-  bookDescContainer.style.padding = padding;
-
+function createForm() {
   const form = document.createElement("form");
   form.style.display = "flex";
   form.style.flexDirection = "column";
@@ -135,9 +136,37 @@ function addDescription() {
     <label>Title <input name="title"></label>
     <label>Author <input name="author"></label>
     <label>Year <input name="year"></label>
-    <label>Description <textarea name="desc", rows="5", cols="40"></textarea></label>
+    <label>Description <textarea name="desc" rows="5" cols="40"></textarea></label>
     <button type="submit">Submit</button>
   `;
+
+  return form;
+}
+
+function validateData(book) {
+  if (
+    Object.values(book).some(value => value === null || value.trim() === "")
+  ) {
+    alert("Поля не мають бути пустими!");
+    return false;
+  } else if (!Number.isInteger(Number(book.year))) {
+    alert("Рік має бути числом");
+    return false;
+  } else {
+    return true;
+  }
+}
+
+function addDescription() {
+  bookDescContainer.innerHTML = "";
+  bookDescContainer.style.border = border;
+  bookDescContainer.style.padding = padding;
+
+  const title = document.createElement("h2");
+  title.textContent = "Додати книгу";
+  bookDescContainer.prepend(title);
+
+  const form = createForm();
 
   form.addEventListener("submit", e => {
     e.preventDefault();
@@ -151,13 +180,10 @@ function addDescription() {
       description: data.get("desc"),
     };
 
-    if (
-      Object.values(book).some(value => value === null || value.trim() === "")
-    ) {
-      alert("Поля не мають бути пустими!");
-    } else if (!Number.isInteger(Number(book.year))) {
-      alert("Рік має бути числом");
-    } else {
+    if (validateData(book)) {
+      const submitButton = form.querySelector("button");
+      submitButton.textContent = "Submiting...";
+
       const options = {
         method: "POST",
         body: JSON.stringify(book),
@@ -165,9 +191,6 @@ function addDescription() {
           "Content-Type": "application/json; charset = UTF-8",
         },
       };
-
-      const submitButton = form.querySelector("button");
-      submitButton.textContent = "Submiting...";
 
       fetch(BASE_URL, options)
         .then(() => {
@@ -183,6 +206,63 @@ function addDescription() {
   bookDescContainer.append(form);
 }
 
-addBookBtn.addEventListener("click", addDescription);
+function editDescription(e) {
+  bookDescContainer.innerHTML = "";
+  bookDescContainer.style.border = border;
+  bookDescContainer.style.padding = padding;
 
+  const title = document.createElement("h2");
+  title.textContent = "Редагувати книгу";
+  bookDescContainer.prepend(title);
+
+  const form = createForm();
+  const id = e.target.parentNode.id;
+  fetch(`${BASE_URL}/${id}`)
+    .then(response => response.json())
+    .then(data => {
+      form.elements.title.value = data.title;
+      form.elements.author.value = data.author;
+      form.elements.year.value = data.year;
+      form.elements.desc.value = data.description;
+    })
+    .catch(error => console.log(error));
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const data = new FormData(e.target);
+
+    const book = {
+      title: data.get("title"),
+      author: data.get("author"),
+      year: data.get("year"),
+      description: data.get("desc"),
+    };
+
+    if (validateData(book)) {
+      const submitButton = form.querySelector("button");
+      submitButton.textContent = "Submiting...";
+
+      const options = {
+        method: "PUT",
+        body: JSON.stringify(book),
+        headers: {
+          "Content-Type": "application/json; charset = UTF-8",
+        },
+      };
+
+      fetch(`${BASE_URL}/${id}`, options)
+        .then(() => {
+          showBookList();
+          bookDescContainer.innerHTML = "";
+          bookDescContainer.style.border = "none";
+        })
+        .catch(error => console.log(error))
+        .finally(() => (submitButton.textContent = "Submit"));
+    }
+  });
+  bookDescContainer.append(form);
+}
+
+addBookBtn.addEventListener("click", addDescription);
 showBookList();
