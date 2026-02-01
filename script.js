@@ -96,19 +96,6 @@ async function showDetails(e) {
   } finally {
     button.textContent = "View Details";
   }
-
-  // fetch(`${BASE_URL}/${id}`)
-  //   .then(response => response.json())
-  //   .then(data => {
-  //     bookDescContainer.innerHTML = `
-  //       <h2>${data.title}</h2>
-  //       <p><strong>Автор:</strong> ${data.author}</p>
-  //       <p><strong>Рік видання:</strong> ${data.year}</p>
-  //       <p><strong>Опис:</strong> ${data.description}</p>
-  //     `;
-  //   })
-  //   .catch(error => console.log(error))
-  //   .finally(() => (button.textContent = "View Details"));
 }
 
 async function deleteBook(e) {
