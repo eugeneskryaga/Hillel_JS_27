@@ -1,5 +1,8 @@
-const BASE_URL = "https://6971cf4a32c6bacb12c49096.mockapi.io/books";
+const api = axios.create({
+  baseURL: "https://6971cf4a32c6bacb12c49096.mockapi.io",
+});
 
+const BASE_URL = "https://6971cf4a32c6bacb12c49096.mockapi.io/books";
 const root = document.querySelector("#root");
 
 const title = document.createElement("h1");
@@ -31,47 +34,47 @@ markup.append(bookDescContainer);
 
 const notification = document.createElement("div");
 
-function showBookList() {
-  bookList.innerHTML = "";
-  title.textContent = "LOADING...";
+async function showBookList() {
+  try {
+    bookList.innerHTML = "";
+    title.textContent = "LOADING...";
 
-  fetch(BASE_URL)
-    .then(response => response.json())
-    .then(data => {
-      data.forEach(book => {
-        const listItem = document.createElement("li");
-        listItem.id = book.id;
-        listItem.style.marginBottom = "10px";
+    const { data } = await api("/books");
 
-        const bookTitle = book.title + " ";
+    data.forEach(book => {
+      const listItem = document.createElement("li");
+      listItem.id = book.id;
+      listItem.style.marginBottom = "10px";
 
-        const detailsButton = document.createElement("button");
-        detailsButton.textContent = "View Details";
-        detailsButton.style.marginRight = "5px";
-        detailsButton.addEventListener("click", event => {
-          showDetails(event);
-        });
+      const bookTitle = book.title + " ";
 
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "Delete book";
-        deleteButton.style.marginRight = "5px";
-        deleteButton.addEventListener("click", event => deleteBook(event));
-
-        const editButton = document.createElement("button");
-        editButton.textContent = "Edit book";
-        editButton.addEventListener("click", event => editDescription(event));
-
-        listItem.append(bookTitle, detailsButton, deleteButton, editButton);
-        bookList.appendChild(listItem);
+      const detailsButton = document.createElement("button");
+      detailsButton.textContent = "View Details";
+      detailsButton.style.marginRight = "5px";
+      detailsButton.addEventListener("click", event => {
+        showDetails(event);
       });
-    })
-    .catch(error => console.log(error))
-    .finally(() => {
-      title.textContent = "Список книг";
+
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete book";
+      deleteButton.style.marginRight = "5px";
+      deleteButton.addEventListener("click", event => deleteBook(event));
+
+      const editButton = document.createElement("button");
+      editButton.textContent = "Edit book";
+      editButton.addEventListener("click", event => editDescription(event));
+
+      listItem.append(bookTitle, detailsButton, deleteButton, editButton);
+      bookList.appendChild(listItem);
     });
+  } catch (error) {
+    console.log(error);
+  } finally {
+    title.textContent = "Список книг";
+  }
 }
 
-function showDetails(e) {
+async function showDetails(e) {
   bookDescContainer.innerHTML = "";
   bookDescContainer.style.border = border;
   bookDescContainer.style.padding = padding;
@@ -80,33 +83,47 @@ function showDetails(e) {
   const button = e.target;
   button.textContent = "Loading...";
 
-  fetch(`${BASE_URL}/${id}`)
-    .then(response => response.json())
-    .then(data => {
-      bookDescContainer.innerHTML = `
+  try {
+    const { data } = await api(`/books/${id}`);
+    bookDescContainer.innerHTML = `
         <h2>${data.title}</h2>
         <p><strong>Автор:</strong> ${data.author}</p>
         <p><strong>Рік видання:</strong> ${data.year}</p>
         <p><strong>Опис:</strong> ${data.description}</p>
       `;
-    })
-    .catch(error => console.log(error))
-    .finally(() => (button.textContent = "View Details"));
+  } catch (error) {
+    console.log(error);
+  } finally {
+    button.textContent = "View Details";
+  }
+
+  // fetch(`${BASE_URL}/${id}`)
+  //   .then(response => response.json())
+  //   .then(data => {
+  //     bookDescContainer.innerHTML = `
+  //       <h2>${data.title}</h2>
+  //       <p><strong>Автор:</strong> ${data.author}</p>
+  //       <p><strong>Рік видання:</strong> ${data.year}</p>
+  //       <p><strong>Опис:</strong> ${data.description}</p>
+  //     `;
+  //   })
+  //   .catch(error => console.log(error))
+  //   .finally(() => (button.textContent = "View Details"));
 }
 
-function deleteBook(e) {
+async function deleteBook(e) {
   const id = e.target.parentNode.id;
-  const options = {
-    method: "DELETE",
-  };
-  e.target.textContent = "Deleteing...";
-  fetch(`${BASE_URL}/${id}`, options)
-    .then(() => {
-      showBookList();
-      showNotification();
-    })
-    .catch(error => console.log(error))
-    .finally(() => (e.target.textContent = "Delete book"));
+
+  try {
+    e.target.textContent = "Deleteing...";
+    await api.delete(`books/${id}`);
+    showBookList();
+    showNotification();
+  } catch (error) {
+    console.log(error);
+  } finally {
+    e.target.textContent = "Delete book";
+  }
 }
 
 function showNotification() {
@@ -168,7 +185,7 @@ function addDescription() {
 
   const form = createForm();
 
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
 
     const data = new FormData(e.target);
@@ -184,29 +201,23 @@ function addDescription() {
       const submitButton = form.querySelector("button");
       submitButton.textContent = "Submiting...";
 
-      const options = {
-        method: "POST",
-        body: JSON.stringify(book),
-        headers: {
-          "Content-Type": "application/json; charset = UTF-8",
-        },
-      };
-
-      fetch(BASE_URL, options)
-        .then(() => {
-          showBookList();
-          bookDescContainer.innerHTML = "";
-          bookDescContainer.style.border = "none";
-        })
-        .catch(error => console.log(error))
-        .finally(() => (submitButton.textContent = "Submit"));
+      try {
+        await api.post("/books", book);
+        showBookList();
+        bookDescContainer.innerHTML = "";
+        bookDescContainer.style.border = "none";
+      } catch (error) {
+        console.log(error);
+      } finally {
+        submitButton.textContent = "Submit";
+      }
     }
   });
 
   bookDescContainer.append(form);
 }
 
-function editDescription(e) {
+async function editDescription(e) {
   bookDescContainer.innerHTML = "";
   bookDescContainer.style.border = border;
   bookDescContainer.style.padding = padding;
@@ -217,17 +228,18 @@ function editDescription(e) {
 
   const form = createForm();
   const id = e.target.parentNode.id;
-  fetch(`${BASE_URL}/${id}`)
-    .then(response => response.json())
-    .then(data => {
-      form.elements.title.value = data.title;
-      form.elements.author.value = data.author;
-      form.elements.year.value = data.year;
-      form.elements.desc.value = data.description;
-    })
-    .catch(error => console.log(error));
 
-  form.addEventListener("submit", e => {
+  try {
+    const { data } = await api(`/books/${id}`);
+    form.elements.title.value = data.title;
+    form.elements.author.value = data.author;
+    form.elements.year.value = data.year;
+    form.elements.desc.value = data.description;
+  } catch (error) {
+    console.log(error);
+  }
+
+  form.addEventListener("submit", async e => {
     e.preventDefault();
 
     const data = new FormData(e.target);
@@ -243,22 +255,16 @@ function editDescription(e) {
       const submitButton = form.querySelector("button");
       submitButton.textContent = "Submiting...";
 
-      const options = {
-        method: "PUT",
-        body: JSON.stringify(book),
-        headers: {
-          "Content-Type": "application/json; charset = UTF-8",
-        },
-      };
-
-      fetch(`${BASE_URL}/${id}`, options)
-        .then(() => {
-          showBookList();
-          bookDescContainer.innerHTML = "";
-          bookDescContainer.style.border = "none";
-        })
-        .catch(error => console.log(error))
-        .finally(() => (submitButton.textContent = "Submit"));
+      try {
+        await api.put(`/books/${id}`, book);
+        showBookList();
+        bookDescContainer.innerHTML = "";
+        bookDescContainer.style.border = "none";
+      } catch (error) {
+        error;
+      } finally {
+        submitButton.textContent = "Submit";
+      }
     }
   });
   bookDescContainer.append(form);
