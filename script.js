@@ -2,7 +2,6 @@ const api = axios.create({
   baseURL: "https://6971cf4a32c6bacb12c49096.mockapi.io",
 });
 
-const BASE_URL = "https://6971cf4a32c6bacb12c49096.mockapi.io/books";
 const root = document.querySelector("#root");
 
 const title = document.createElement("h1");
@@ -103,7 +102,7 @@ async function deleteBook(e) {
 
   try {
     e.target.textContent = "Deleteing...";
-    await api.delete(`books/${id}`);
+    await api.delete(`/books/${id}`);
     showBookList();
     showNotification();
   } catch (error) {
