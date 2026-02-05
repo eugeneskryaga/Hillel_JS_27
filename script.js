@@ -141,8 +141,7 @@ async function deleteBook(e) {
 
 function showNotification() {
   notification.innerHTML = "";
-  bookDescContainer.innerHTML = "";
-  bookDescContainer.style.border = "none";
+  clearContainer(bookDescContainer);
   setTimeout(() => {
     notification.innerHTML = "<strong>Книгу успішно видалено!</strong>";
     notification.style.width = "25%";
@@ -189,8 +188,7 @@ function validateData(book) {
 
 function addDescription() {
   bookDescContainer.innerHTML = "";
-  bookDescContainer.style.border = border;
-  bookDescContainer.style.padding = padding;
+  clearContainer(bookDescContainer);
 
   const title = document.createElement("h2");
   title.textContent = "Додати книгу";
@@ -217,8 +215,7 @@ function addDescription() {
       try {
         await api.post("/books", book);
         showBookList();
-        bookDescContainer.innerHTML = "";
-        bookDescContainer.style.border = "none";
+        clearContainer(bookDescContainer);
       } catch (error) {
         console.log(error);
       } finally {
@@ -271,8 +268,7 @@ async function editDescription(e) {
       try {
         await api.put(`/books/${id}`, book);
         showBookList();
-        bookDescContainer.innerHTML = "";
-        bookDescContainer.style.border = "none";
+        clearContainer(bookDescContainer);
       } catch (error) {
         error;
       } finally {
@@ -284,20 +280,20 @@ async function editDescription(e) {
 }
 
 function handlePrevious() {
-  clearDesc();
+  clearContainer(bookDescContainer);
   pageCounter -= 1;
   showBookList();
 }
 
 function handleNext() {
-  clearDesc();
+  clearContainer(bookDescContainer);
   pageCounter += 1;
   showBookList();
 }
 
-function clearDesc() {
-  bookDescContainer.innerHTML = "";
-  bookDescContainer.style.border = "none";
+function clearContainer(callback) {
+  callback.innerHTML = "";
+  callback.style.border = "none";
 }
 
 addBookBtn.addEventListener("click", addDescription);
