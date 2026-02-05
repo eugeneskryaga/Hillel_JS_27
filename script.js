@@ -291,9 +291,9 @@ function handleNext() {
   showBookList();
 }
 
-function clearContainer(callback) {
-  callback.innerHTML = "";
-  callback.style.border = "none";
+function clearContainer(container) {
+  container.innerHTML = "";
+  container.style.border = "none";
 }
 
 addBookBtn.addEventListener("click", addDescription);
