@@ -284,13 +284,20 @@ async function editDescription(e) {
 }
 
 function handlePrevious() {
+  clearDesc();
   pageCounter -= 1;
   showBookList();
 }
 
 function handleNext() {
+  clearDesc();
   pageCounter += 1;
   showBookList();
+}
+
+function clearDesc() {
+  bookDescContainer.innerHTML = "";
+  bookDescContainer.style.border = "none";
 }
 
 addBookBtn.addEventListener("click", addDescription);
