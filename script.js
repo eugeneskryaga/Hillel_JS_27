@@ -2,6 +2,8 @@ const api = axios.create({
   baseURL: "https://6971cf4a32c6bacb12c49096.mockapi.io",
 });
 
+let pageCounter = 1;
+
 const root = document.querySelector("#root");
 
 const title = document.createElement("h1");
@@ -23,6 +25,10 @@ bookListContainer.append(title);
 const bookList = document.createElement("ul");
 bookListContainer.append(bookList);
 
+const pageContainer = document.createElement("div");
+pageContainer.style.marginBottom = "5px";
+bookListContainer.append(pageContainer);
+
 const addBookBtn = document.createElement("button");
 addBookBtn.textContent = "Add Book";
 bookListContainer.append(addBookBtn);
@@ -38,7 +44,12 @@ async function showBookList() {
     bookList.innerHTML = "";
     title.textContent = "LOADING...";
 
-    const { data } = await api("/books");
+    const { data } = await api("/books", {
+      params: {
+        page: pageCounter,
+        limit: 5,
+      },
+    });
 
     data.forEach(book => {
       const listItem = document.createElement("li");
@@ -66,6 +77,22 @@ async function showBookList() {
       listItem.append(bookTitle, detailsButton, deleteButton, editButton);
       bookList.appendChild(listItem);
     });
+
+    pageContainer.innerHTML = `
+    <button class="prev">&lt;</button>
+    <strong> ${pageCounter} </strong>
+    <button class="next">&gt;</button>`;
+
+    const prevButton = pageContainer.querySelector(".prev");
+    const nextButton = pageContainer.querySelector(".next");
+    prevButton.addEventListener("click", handlePrevious);
+    nextButton.addEventListener("click", handleNext);
+
+    if (pageCounter === 1) {
+      prevButton.style.display = "none";
+    } else if (data.length < 5) {
+      nextButton.style.display = "none";
+    }
   } catch (error) {
     console.log(error);
   } finally {
@@ -254,6 +281,16 @@ async function editDescription(e) {
     }
   });
   bookDescContainer.append(form);
+}
+
+function handlePrevious() {
+  pageCounter -= 1;
+  showBookList();
+}
+
+function handleNext() {
+  pageCounter += 1;
+  showBookList();
 }
 
 addBookBtn.addEventListener("click", addDescription);
