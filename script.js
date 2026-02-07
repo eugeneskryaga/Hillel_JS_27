@@ -270,7 +270,7 @@ async function editDescription(e) {
         showBookList();
         clearContainer(bookDescContainer);
       } catch (error) {
-        error;
+        console.log(error);
       } finally {
         submitButton.textContent = "Submit";
       }
