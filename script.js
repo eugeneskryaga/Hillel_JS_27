@@ -3,6 +3,8 @@ const api = axios.create({
 });
 
 let pageCounter = 1;
+let search = "";
+let sortOrder = "asc";
 
 const root = document.querySelector("#root");
 
@@ -21,6 +23,15 @@ bookListContainer.style.border = border;
 bookListContainer.style.padding = padding;
 markup.append(bookListContainer);
 bookListContainer.append(title);
+
+const sortSelect = document.createElement("select");
+sortSelect.style.marginBottom = "5px";
+sortSelect.innerHTML =
+  "<option value='asc'>From A to Z</option><option value='desc'>From Z to A</option>";
+
+const searchForm = document.createElement("form");
+searchForm.innerHTML =
+  "<input type=text name='search' style='margin-right: 5px'><button>Search</button>";
 
 const bookList = document.createElement("ul");
 bookListContainer.append(bookList);
@@ -48,6 +59,9 @@ async function showBookList() {
       params: {
         page: pageCounter,
         limit: 5,
+        search,
+        sortBy: "title",
+        order: sortOrder,
       },
     });
 
@@ -78,6 +92,9 @@ async function showBookList() {
       bookList.appendChild(listItem);
     });
 
+    bookList.before(searchForm);
+    searchForm.before(sortSelect);
+
     pageContainer.innerHTML = `
     <button class="prev">&lt;</button>
     <strong> ${pageCounter} </strong>
@@ -87,10 +104,10 @@ async function showBookList() {
     const nextButton = pageContainer.querySelector(".next");
     prevButton.addEventListener("click", handlePrevious);
     nextButton.addEventListener("click", handleNext);
-
     if (pageCounter === 1) {
       prevButton.style.display = "none";
-    } else if (data.length < 5) {
+    }
+    if (data.length < 5) {
       nextButton.style.display = "none";
     }
   } catch (error) {
@@ -188,7 +205,6 @@ function validateData(book) {
 
 function addDescription() {
   bookDescContainer.innerHTML = "";
-  clearContainer(bookDescContainer);
 
   const title = document.createElement("h2");
   title.textContent = "Додати книгу";
@@ -296,5 +312,23 @@ function clearContainer(container) {
   container.style.border = "none";
 }
 
+function searchHandler(e) {
+  e.preventDefault();
+  search = e.target.elements.search.value.trim();
+  pageCounter = 1;
+  showBookList();
+  e.target.reset();
+  clearContainer(bookDescContainer);
+}
+
+function changeOrder(e) {
+  sortOrder = e.target.value;
+  showBookList();
+}
+
 addBookBtn.addEventListener("click", addDescription);
 showBookList();
+
+searchForm.addEventListener("submit", searchHandler);
+
+sortSelect.addEventListener("change", changeOrder);
