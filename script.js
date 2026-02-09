@@ -36,6 +36,9 @@ searchForm.innerHTML =
 const bookList = document.createElement("ul");
 bookListContainer.append(bookList);
 
+bookList.before(searchForm);
+searchForm.before(sortSelect);
+
 const pageContainer = document.createElement("div");
 pageContainer.style.marginBottom = "5px";
 bookListContainer.append(pageContainer);
@@ -91,9 +94,6 @@ async function showBookList() {
       listItem.append(bookTitle, detailsButton, deleteButton, editButton);
       bookList.appendChild(listItem);
     });
-
-    bookList.before(searchForm);
-    searchForm.before(sortSelect);
 
     pageContainer.innerHTML = `
     <button class="prev">&lt;</button>
@@ -323,6 +323,7 @@ function searchHandler(e) {
 
 function changeOrder(e) {
   sortOrder = e.target.value;
+  pageCounter = 1;
   showBookList();
 }
 
